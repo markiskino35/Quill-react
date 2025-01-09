@@ -40,7 +40,7 @@ const RichTextEditor = () => {
 
   return (
     <div className='p-4 bg-white rounded-lg shadow-md w-full max-w-2xl'>
-      {/* Custom Toolbar */}
+      {/* Custom Toolbars */}
       <div
         id='toolbar'
         className='mb-2 flex gap-2 bg-gray-100 p-2 rounded border border-gray-300'
