@@ -1,0 +1,10 @@
+@import 'react-quill/dist/quill.core.css';
+
+/* Quill editor */
+.ql-editor {
+  @apply text-base leading-relaxed font-normal min-h-64 h-auto;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
