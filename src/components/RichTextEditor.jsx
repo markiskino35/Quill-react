@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.core.css';
 
@@ -13,6 +13,9 @@ import { MdOutlineFormatClear } from 'react-icons/md';
 const RichTextEditor = () => {
   const [content, setContent] = useState('');
 
+  const quillRef = useRef(null);
+  const [activeFormats, setActiveFormats] = useState({});
+
   // Custom Toolbar Options
   const modules = {
     toolbar: {
@@ -20,22 +23,43 @@ const RichTextEditor = () => {
     },
   };
 
-  const formats = [
-    'bold',
-    'italic',
-    'underline',
-    'strike',
-    'list',
-    'bullet',
-    'indent',
-  ];
+  console.log(activeFormats);
 
-  const handleChange = (value) => {
+  const handleTextInput = (value) => {
     setContent(value);
   };
 
   const handleSave = () => {
     console.log(content);
+  };
+
+  // Toggle formatting
+  const toggleFormat = (format, value = true) => {
+    if (quillRef.current) {
+      const quill = quillRef.current.getEditor();
+      const currentFormat = quill.getFormat()[format]; // Check current format state
+
+      if (format === 'list') {
+        // Toggle between 'ordered', 'bullet', and undefined
+        quill.format(format, currentFormat === value ? false : value);
+      } else {
+        const isActive = currentFormat; // For other formats, check if active
+        quill.format(format, isActive ? false : value);
+      }
+
+      // Update active formats
+      const updatedFormats = quill.getFormat();
+      setActiveFormats(updatedFormats);
+    }
+  };
+
+  // Update active states when selection changes
+  const handleSelectionChange = () => {
+    if (quillRef.current) {
+      const quill = quillRef.current.getEditor();
+      const formats = quill.getFormat();
+      setActiveFormats(formats);
+    }
   };
 
   return (
@@ -46,33 +70,54 @@ const RichTextEditor = () => {
         className='mb-2 flex gap-2 bg-gray-100 p-2 rounded border border-gray-300'
       >
         <button
-          className='ql-bold bg-gray-200 rounded px-2 py-1 hover:bg-gray-300'
+          onClick={() => toggleFormat('bold')}
+          className={`rounded px-2 py-1 ${
+            activeFormats.bold ? 'bg-blue-300' : 'hover:bg-gray-300 bg-gray-200'
+          }`}
           aria-label='Bold'
         >
           <FaBold />
         </button>
         <button
-          className='ql-italic bg-gray-200 rounded px-2 py-1 hover:bg-gray-300'
+          onClick={() => toggleFormat('italic')}
+          className={`rounded px-2 py-1 ${
+            activeFormats.italic
+              ? 'bg-blue-300'
+              : 'hover:bg-gray-300 bg-gray-200 '
+          }`}
           aria-label='Italic'
         >
           <FaItalic />
         </button>
         <button
-          className='ql-underline bg-gray-200 rounded px-2 py-1 hover:bg-gray-300'
+          onClick={() => toggleFormat('underline')}
+          className={`rounded px-2 py-1 ${
+            activeFormats.underline
+              ? 'bg-blue-300'
+              : 'hover:bg-gray-300 bg-gray-200'
+          }`}
           aria-label='Underline'
         >
           <FaUnderline className='text-lg' />
         </button>
         <button
-          className='ql-list bg-gray-200 rounded px-2 py-1 hover:bg-gray-300'
-          value='ordered'
+          onClick={() => toggleFormat('list', 'ordered')}
+          className={`rounded px-2 py-1 ${
+            activeFormats.list === 'ordered'
+              ? 'bg-blue-300'
+              : 'hover:bg-gray-300 bg-gray-200'
+          }`}
           aria-label='Ordered List'
         >
           <VscListOrdered className='text-2xl' />
         </button>
         <button
-          className='ql-list bg-gray-200 rounded px-2 py-1 hover:bg-gray-300'
-          value='bullet'
+          onClick={() => toggleFormat('list', 'bullet')}
+          className={`rounded px-2 py-1 ${
+            activeFormats.list === 'bullet'
+              ? 'bg-blue-300'
+              : 'hover:bg-gray-300 bg-gray-200'
+          }`}
           aria-label='Bullet List'
         >
           <RiListUnordered className='text-xl' />
@@ -101,10 +146,11 @@ const RichTextEditor = () => {
 
       {/* Rich Text Editor */}
       <ReactQuill
+        ref={quillRef}
         value={content}
-        onChange={handleChange}
+        onChange={handleTextInput}
+        onChangeSelection={handleSelectionChange}
         modules={modules}
-        formats={formats}
         theme={null}
         className='rounded border border-gray-300 min-h-64 h-auto bg-gray-50'
       />
